@@ -23,7 +23,7 @@ jobs:
           go-version: 1.x
 
       - name: Install Dependencies
-        run: go mod download
+        run: make mod-download
 
       - name: Check Go Modules
         run: make mod-verify
