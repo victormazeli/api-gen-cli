@@ -1,0 +1,53 @@
+name: Build and Tag on PR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.x
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Check Go Modules
+        run: make mod-verify
+
+      - name: Lint with golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          run_args: -v
+
+      # - name: Test
+      #   run: make test
+
+      - name: Cleanup
+        run: go clean
+
+      - name: Increment Version Tag
+        id: increment_tag
+        uses: softprops/action-gh-release-tag@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          prefix: v
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Tag
+        run: git push origin ${{ steps.increment_tag.outputs.tag }}
+        if: github.ref == 'refs/heads/main'
