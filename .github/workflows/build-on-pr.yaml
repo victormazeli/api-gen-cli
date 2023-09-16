@@ -1,0 +1,15 @@
+name: Build, SemVer - MASTER BRANCH
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    uses: ./.github/workflows/reusable-workflow.yml
+    secrets:
+      GHB_TOKEN: ${{ secrets.PAT_TOKEN }}

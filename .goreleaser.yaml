@@ -36,6 +36,12 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+brews:
+  - name: api-gen-cli
+    homepage: https://github.com/victormazeli/homebrew-tools
+    tap:
+      owner: victormazeli
+      name: homebrew-tools
 
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
