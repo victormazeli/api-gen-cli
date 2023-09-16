@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.x
+          go-version: 'stable'
 
       - name: Install Dependencies
         run: make mod-download
@@ -29,24 +29,25 @@ jobs:
         run: make mod-verify
 
       - name: Lint with golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3.7.0
         with:
-          version: latest
-          run_args: -v
+          version: v1.54
+          args: -v
 
       # - name: Test
       #   run: make test
+      - name: Build
+        run: go build -v ./...
 
       - name: Cleanup
         run: go clean
 
       - name: Increment Version Tag
         id: increment_tag
-        uses: softprops/action-gh-release-tag@v1
+        uses: softprops/action-gh-release@v0.1.15
         if: github.ref == 'refs/heads/main'
         with:
-          prefix: v
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Push Tag
         run: git push origin ${{ steps.increment_tag.outputs.tag }}
