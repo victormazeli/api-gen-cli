@@ -1,0 +1,38 @@
+linters-settings:
+  enable-all: true
+  disable:
+    - gosec
+    - govet
+  revive:
+    ignore-generated-header: true
+
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - gofmt
+    - goimports
+    - gocyclo
+    - ineffassign
+    - interfacer
+    - lll
+    - misspell
+    - prealloc
+    - revive
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unconvert
+    - unparam
+    - varcheck
+    - whitespace
+
+exclude:
+  - 'vendor/**/*'
+  - 'generated/**/*'
+  - '_test.go'
+
+run:
+  skip-dirs-use-default: true
+  skip-files:
+    - '*_mock.go'
