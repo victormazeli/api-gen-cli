@@ -15,6 +15,10 @@ test:
 lint:
 	golangci-lint run
 
+.PHONY: lint-fix
+lint-fix:
+	golangci-lint run --fix
+
 .PHONY: mod-tidy
 mod-tidy:
 	go mod tidy

@@ -1,32 +1,111 @@
 linters-settings:
-  enable-all: true
-  disable:
-    - gosec
-    - govet
-  revive:
-    ignore-generated-header: true
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      # These 3 will detect many cases, but they do sense
+      # if it's performance oriented code
+      - hugeParam
+      - rangeExprCopy
+      - rangeValCopy
+
+  errcheck:
+    # Report `a := b.(MyStruct)` when `a, ok := ...` should be.
+    check-type-assertions: true # Default: false
+
+    # Report skipped checks:`num, _ := strconv.Atoi(numStr)`.
+    check-blank: true # Default: false
+
+    # Function to skip.
+    exclude-functions:
+      - io/ioutil.ReadFile
+      - io.Copy(*bytes.Buffer)
+      - io.Copy(os.Stdout)
+
+  govet:
+    disable:
+      - fieldalignment # I'm ok to waste some bytes
+
+  nakedret:
+    # No naked returns, ever.
+    max-func-lines: 1
+
+  tagliatelle:
+    case:
+      rules:
+        json: snake # why it's not a `snake` by default?!
+        yaml: snake # why it's not a `snake` by default?!
+        xml: camel
+        bson: camel
+        avro: snake
+        mapstructure: kebab
 
 linters:
-  enable:
+  fast: false
+  enable-all: true
+  disable:
+    - containedctx
+    - cyclop
     - deadcode
-    - errcheck
-    - gofmt
-    - goimports
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - errchkjson
+    - execinquery
+    - exhaustive
+    - exhaustivestruct
+    - exhaustruct
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
     - gocyclo
-    - ineffassign
-    - interfacer
+    - godox
+    - goerr113
+    - goheader
+    - golint
+    - gomnd
+    - gomodguard
+    - goprintffuncname
+    - grouper
+    - ifshort
+    - importas
+    - interfacebloat
+    - ireturn
     - lll
-    - misspell
-    - prealloc
-    - revive
-    - staticcheck
-    - structcheck
+    - loggercheck
+    - maintidx
+    - makezero
+    - maligned
+    - musttag
+    - nestif
+    - nlreturn
+    - nonamedreturns
+    - nosnakecase
+    - nosprintfhostport
+    - paralleltest
+    - testpackage
     - typecheck
-    - unconvert
-    - unparam
-    - varcheck
+    - varnamelen
     - whitespace
-
+    - wrapcheck
+    - wsl
+    - interfacer
+    - varcheck
+    - scopelint
+    - structcheck
 exclude:
   - 'vendor/**/*'
   - 'generated/**/*'
@@ -35,3 +114,7 @@ run:
   skip-dirs-use-default: true
   skip-files:
     - '.*_mock\.go$'
+
+  issues-exit-code: 1
+  tests: true
+  modules-download-mode: readonly

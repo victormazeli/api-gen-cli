@@ -2,18 +2,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
 func generateCmd() *cobra.Command {
-
-	var genCmd = &cobra.Command{
+	genCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate a starter Golang API project template",
 		Run: func(cmd *cobra.Command, args []string) {
-			projectName, _ := cmd.Flags().GetString("name")
+			projectName, err := cmd.Flags().GetString("name")
+			if err != nil {
+				fmt.Printf("Error getting project name: %v", err)
+				return
+			}
 			generateAPIProject(projectName)
 		},
 	}
@@ -22,7 +26,7 @@ func generateCmd() *cobra.Command {
 	return genCmd
 }
 
-// Function to generate project files for a starter api project
+// Function to generate project files for a starter api project.
 func generateAPIProject(projectName string) {
 	if projectName == "" {
 		fmt.Println("Please provide a project name using the -n flag.")
@@ -74,7 +78,7 @@ func main() {
 }
 `
 	mainFilePath := filepath.Join(projectRoot, "cmd", "main.go")
-	err = os.WriteFile(mainFilePath, []byte(mainFileContent), 0644)
+	err = os.WriteFile(mainFilePath, []byte(mainFileContent), 0o600)
 	if err != nil {
 		fmt.Printf("Error creating main.go file: %v\n", err)
 		return
