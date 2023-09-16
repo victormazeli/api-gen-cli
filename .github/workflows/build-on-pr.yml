@@ -1,4 +1,4 @@
-name: Build, SemVer - MASTER BRANCH
+name: Build, SemVer - FEATURE BRANCH
 
 on:
   pull_request:
@@ -10,6 +10,6 @@ on:
 jobs:
 
   build:
-    uses: ./.github/workflows/reusable-workflow.yaml
+    uses: ./.github/workflows/reusable-workflow.yml
     secrets:
       GHB_TOKEN: ${{ secrets.PAT_TOKEN }}
