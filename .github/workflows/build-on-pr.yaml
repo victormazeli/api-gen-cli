@@ -10,6 +10,6 @@ on:
 jobs:
 
   build:
-    uses: ./.github/workflows/reusable-workflow.yml
+    uses: ./.github/workflows/reusable-workflow.yaml
     secrets:
       GHB_TOKEN: ${{ secrets.PAT_TOKEN }}
