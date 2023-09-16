@@ -1,3 +1,12 @@
+## [0.1.2](https://github.com/victormazeli/api-gen-cli/compare/v0.1.1...v0.1.2) (2023-09-16)
+
+
+### Bug Fixes
+
+* update on release flow ([a6785d0](https://github.com/victormazeli/api-gen-cli/commit/a6785d01a1edbd7a4b7e4dd7700a4c3b3e9295af))
+
+
+
 ## [0.1.1](https://github.com/victormazeli/api-gen-cli/compare/v0.1.0...v0.1.1) (2023-09-16)
 
 
