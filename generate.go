@@ -2,23 +2,30 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 )
 
+// Generate Command to generate new API project.
 func generateCmd() *cobra.Command {
 	genCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate a starter Golang API project template",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			projectName, err := cmd.Flags().GetString("name")
 			if err != nil {
-				fmt.Printf("Error getting project name: %v", err)
-				return
+				return errors.New("Project name must be provided")
 			}
-			generateAPIProject(projectName)
+			err = generateAPIProject(projectName)
+			if err != nil {
+				return err
+			}
+			return nil
 		},
 	}
 
@@ -27,62 +34,88 @@ func generateCmd() *cobra.Command {
 }
 
 // Function to generate project files for a starter api project.
-func generateAPIProject(projectName string) {
+func generateAPIProject(projectName string) error {
 	if projectName == "" {
-		fmt.Println("Please provide a project name using the -n flag.")
-		return
+		err := errors.New("please provide a project name using the -n flag")
+		return err
 	}
 
-	projectRoot := filepath.Join(".", projectName)
+	// Get the current working directory.
+	cwd, err := os.Getwd()
+	if err != nil {
+		err := errors.Wrap(err, "Error creating project directory")
+		return err
+	}
+
+	projectRoot := filepath.Join(cwd, projectName)
 
 	// Create the project directory
-	err := os.Mkdir(projectRoot, os.ModePerm)
+	err = os.Mkdir(projectRoot, os.ModePerm)
 	if err != nil {
-		fmt.Printf("Error creating project directory: %v\n", err)
-		return
+		err := errors.Wrap(err, "Error creating project directory")
+		return err
 	}
 
-	// Create necessary directories and files
-	directoryStructure := []string{
-		"cmd",
-		"internal/api/handlers",
-		"internal/api/middlewares",
-		"internal/config",
-		"internal/db",
-		"internal/models",
-		"pkg/utils",
-		"tests",
-	}
+	// Get the absolute path of a specific directory.
+	sourceDir := filepath.Join(cwd, "templates", "REST")
 
-	for _, dir := range directoryStructure {
-		dirPath := filepath.Join(projectRoot, dir)
-		err := os.MkdirAll(dirPath, os.ModePerm)
+	// Walk through the source directory and copy all files and folders.
+	err = filepath.Walk(sourceDir, func(srcPath string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("Error creating directory %s: %v\n", dir, err)
-			return
+			return err
 		}
-	}
 
-	// Create main.go file
-	mainFileContent := `package main
+		// Calculate the destination path by replacing the source directory with the project root directory.
+		relPath, err := filepath.Rel(sourceDir, srcPath)
+		if err != nil {
+			return err
+		}
+		destPath := filepath.Join(projectRoot, relPath)
 
-import (
-	"github.com/gin-gonic/gin"
-)
+		if info.IsDir() {
+			// Create directories in the destination path.
+			err := os.MkdirAll(destPath, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		} else {
+			// Copy files from source to destination.
+			err := copyFile(srcPath, destPath)
+			if err != nil {
+				return err
+			}
+		}
 
-func main() {
-	r := gin.Default()
-	// Add your API routes and handlers here
+		return nil
+	})
 
-	r.Run(":8080")
-}
-`
-	mainFilePath := filepath.Join(projectRoot, "cmd", "main.go")
-	err = os.WriteFile(mainFilePath, []byte(mainFileContent), 0o600)
 	if err != nil {
-		fmt.Printf("Error creating main.go file: %v\n", err)
-		return
+		err = errors.Wrap(err, "Error copying files and folders")
+		return err
 	}
 
 	fmt.Printf("Starter Golang API project template created in '%s'\n", projectRoot)
+
+	return nil
+}
+
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, sourceFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

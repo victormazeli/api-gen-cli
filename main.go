@@ -1,20 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
-
-	"github.com/spf13/cobra"
+	"os/signal"
+	"syscall"
 )
 
-var rootCmd = &cobra.Command{Use: "api-gen"}
-
 func main() {
-	// Add sub commands here
-	rootCmd.AddCommand(generateCmd())
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+	if err := NewRootCmd().ExecuteContext(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "[ERROR]: %v\n", err)
 		os.Exit(1)
 	}
 }
