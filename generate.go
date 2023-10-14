@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,7 @@ func generateCmd() *cobra.Command {
 			if err != nil {
 				return errors.New("Project name must be provided")
 			}
-			err = generateAPIProject(projectName)
+			err = generateAPIProject(cmd.Context(), projectName)
 			if err != nil {
 				return err
 			}
@@ -36,7 +37,7 @@ func generateCmd() *cobra.Command {
 }
 
 // Function to generate project files for a starter api project.
-func generateAPIProject(projectName string) error {
+func generateAPIProject(ctx context.Context, projectName string) error {
 	if projectName == "" {
 		err := errors.New("please provide a project name using the -n flag")
 		return err
@@ -59,8 +60,7 @@ func generateAPIProject(projectName string) error {
 	}
 
 	// Download and unzip the template from the GitHub URL
-	templateURL := "https://github.com/victormazeli/api-gen-cli/raw/main/templates/template.zip"
-	err = downloadAndUnzip(templateURL, projectRoot)
+	err = downloadAndUnzip(ctx, projectRoot)
 	if err != nil {
 		err := errors.Wrap(err, "Error downloading and unzipping template")
 		return err
@@ -71,8 +71,15 @@ func generateAPIProject(projectName string) error {
 	return nil
 }
 
-func downloadAndUnzip(url, targetDir string) error {
-	resp, err := http.Get(url)
+func downloadAndUnzip(ctx context.Context, targetDir string) error {
+	templateURL := "https://github.com/victormazeli/api-gen-cli/raw/main/templates/template.zip"
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, templateURL, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -89,9 +96,10 @@ func downloadAndUnzip(url, targetDir string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
+	out.Close() // Close the file after copying is complete
+
 	if err != nil {
 		return err
 	}
@@ -125,23 +133,31 @@ func unzip(src, dest string) error {
 		}
 		defer rc.Close()
 
-		path := filepath.Join(dest, f.Name)
+		// Normalize the file path to prevent directory traversal
+		cleanedPath := filepath.Join(dest, filepath.Clean(f.Name))
+
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, os.ModePerm)
+			err = os.MkdirAll(cleanedPath, os.ModePerm)
+			if err != nil {
+				return err
+			}
 		} else {
-			if err = os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+			if err := os.MkdirAll(filepath.Dir(cleanedPath), os.ModePerm); err != nil {
 				return err
 			}
 
-			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			file, err := os.OpenFile(cleanedPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer file.Close()
 
-			_, err = io.Copy(f, rc)
+			// Limit the amount of data that can be copied to prevent a DoS vulnerability
+			_, err = io.CopyN(file, rc, 1<<20) // Limit to 1MB
 			if err != nil {
-				return err
+				if !errors.Is(err, io.EOF) {
+					return err
+				}
 			}
 		}
 	}
@@ -149,23 +165,23 @@ func unzip(src, dest string) error {
 	return nil
 }
 
-func copyFile(src, dst string) error {
-	sourceFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer sourceFile.Close()
-
-	destFile, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	_, err = io.Copy(destFile, sourceFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+// func copyFile(src, dst string) error {
+//	sourceFile, err := os.Open(src)
+//	if err != nil {
+//		return err
+//	}
+//	defer sourceFile.Close()
+//
+//	destFile, err := os.Create(dst)
+//	if err != nil {
+//		return err
+//	}
+//	defer destFile.Close()
+//
+//	_, err = io.Copy(destFile, sourceFile)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
