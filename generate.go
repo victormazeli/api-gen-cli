@@ -131,7 +131,7 @@ func unzip(src, dest string) error {
 		if err != nil {
 			return err
 		}
-		defer rc.Close()
+		rc.Close()
 
 		// Normalize the file path to prevent directory traversal
 		cleanedPath := filepath.Join(dest, filepath.Clean(f.Name))
@@ -150,7 +150,7 @@ func unzip(src, dest string) error {
 			if err != nil {
 				return err
 			}
-			defer file.Close()
+			file.Close()
 
 			// Limit the amount of data that can be copied to prevent a DoS vulnerability
 			_, err = io.CopyN(file, rc, 1<<20) // Limit to 1MB
