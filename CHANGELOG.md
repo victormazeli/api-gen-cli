@@ -1,3 +1,12 @@
+## [0.1.6](https://github.com/victormazeli/api-gen-cli/compare/v0.1.5...v0.1.6) (2023-10-14)
+
+
+### Bug Fixes
+
+* added template zip ([53c0771](https://github.com/victormazeli/api-gen-cli/commit/53c0771e29ec442edf55dd174ed245900214e0f0))
+
+
+
 ## [0.1.5](https://github.com/victormazeli/api-gen-cli/compare/v0.1.4...v0.1.5) (2023-10-08)
 
 
@@ -31,16 +40,6 @@
 ### Bug Fixes
 
 * update on release flow ([a6785d0](https://github.com/victormazeli/api-gen-cli/commit/a6785d01a1edbd7a4b7e4dd7700a4c3b3e9295af))
-
-
-
-## [0.1.1](https://github.com/victormazeli/api-gen-cli/compare/v0.1.0...v0.1.1) (2023-09-16)
-
-
-### Bug Fixes
-
-* update on yaml extension ([2815c8e](https://github.com/victormazeli/api-gen-cli/commit/2815c8ef2a85211bff685698d21d722ad2d80c2b))
-* yaml extension on yaml files ([e1ebaf1](https://github.com/victormazeli/api-gen-cli/commit/e1ebaf1dc51fc49fc0c192022e74764e45adbed0))
 
 
 
