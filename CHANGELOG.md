@@ -1,3 +1,14 @@
+## [0.1.7](https://github.com/victormazeli/api-gen-cli/compare/v0.1.6...v0.1.7) (2023-10-14)
+
+
+### Bug Fixes
+
+* adjusted code to download template ([07397d7](https://github.com/victormazeli/api-gen-cli/commit/07397d747ba8e005fffb3bb856596816b4e9372a))
+* fixed lint issue ([d705f17](https://github.com/victormazeli/api-gen-cli/commit/d705f1734730641abb1a5c52b5336367d00e60d7))
+* fixed template downloading ([028cf1a](https://github.com/victormazeli/api-gen-cli/commit/028cf1a3e5dde567e9d029285b678afdb51ea5f7))
+
+
+
 ## [0.1.6](https://github.com/victormazeli/api-gen-cli/compare/v0.1.5...v0.1.6) (2023-10-14)
 
 
@@ -31,15 +42,6 @@
 ### Bug Fixes
 
 * update on go release ([f8a5dde](https://github.com/victormazeli/api-gen-cli/commit/f8a5ddee5d8e4a87e76a372e4f2adc4d74f2b737))
-
-
-
-## [0.1.2](https://github.com/victormazeli/api-gen-cli/compare/v0.1.1...v0.1.2) (2023-09-16)
-
-
-### Bug Fixes
-
-* update on release flow ([a6785d0](https://github.com/victormazeli/api-gen-cli/commit/a6785d01a1edbd7a4b7e4dd7700a4c3b3e9295af))
 
 
 
