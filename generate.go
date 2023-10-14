@@ -1,8 +1,10 @@
 package main
 
 import (
+	"archive/zip"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -43,7 +45,7 @@ func generateAPIProject(projectName string) error {
 	// Get the current working directory.
 	cwd, err := os.Getwd()
 	if err != nil {
-		err := errors.Wrap(err, "Error creating project directory")
+		err := errors.Wrap(err, "Error getting current working directory")
 		return err
 	}
 
@@ -56,45 +58,93 @@ func generateAPIProject(projectName string) error {
 		return err
 	}
 
-	// Get the absolute path of a specific directory.
-	sourceDir := filepath.Join(cwd, "templates", "REST")
-
-	// Walk through the source directory and copy all files and folders.
-	err = filepath.Walk(sourceDir, func(srcPath string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Calculate the destination path by replacing the source directory with the project root directory.
-		relPath, err := filepath.Rel(sourceDir, srcPath)
-		if err != nil {
-			return err
-		}
-		destPath := filepath.Join(projectRoot, relPath)
-
-		if info.IsDir() {
-			// Create directories in the destination path.
-			err := os.MkdirAll(destPath, os.ModePerm)
-			if err != nil {
-				return err
-			}
-		} else {
-			// Copy files from source to destination.
-			err := copyFile(srcPath, destPath)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-
+	// Download and unzip the template from the GitHub URL
+	templateURL := "https://github.com/victormazeli/api-gen-cli/raw/main/templates/template.zip"
+	err = downloadAndUnzip(templateURL, projectRoot)
 	if err != nil {
-		err = errors.Wrap(err, "Error copying files and folders")
+		err := errors.Wrap(err, "Error downloading and unzipping template")
 		return err
 	}
 
 	fmt.Printf("Starter Golang API project template created in '%s'\n", projectRoot)
+
+	return nil
+}
+
+func downloadAndUnzip(url, targetDir string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("HTTP request failed with status code: %d", resp.StatusCode)
+	}
+
+	// Create a temporary file to save the downloaded ZIP archive
+	tmpZipFile := filepath.Join(targetDir, "template.zip")
+
+	out, err := os.Create(tmpZipFile)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	// Unzip the downloaded ZIP archive
+	err = unzip(tmpZipFile, targetDir)
+	if err != nil {
+		return err
+	}
+
+	// Remove the temporary ZIP file
+	err = os.Remove(tmpZipFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		path := filepath.Join(dest, f.Name)
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(path, os.ModePerm)
+		} else {
+			if err = os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+				return err
+			}
+
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
