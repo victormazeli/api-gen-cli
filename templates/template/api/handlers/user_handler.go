@@ -11,7 +11,7 @@ import (
 
 type UserHandler struct {
 	Db  *gorm.DB
-	Env *config.Env
+	Cfg *config.Config
 }
 
 func (u *UserHandler) CreateUser(c *gin.Context) {
