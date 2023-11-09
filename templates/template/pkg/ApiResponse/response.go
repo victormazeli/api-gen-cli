@@ -13,18 +13,20 @@ type Response struct {
 }
 
 // SendSuccess sends a JSON response with a status code of 200 (OK).
-func SendSuccess(c *gin.Context, data interface{}) {
+func SendSuccess(c *gin.Context, message string, data interface{}) {
 	c.JSON(http.StatusOK, Response{
-		Status: http.StatusOK,
-		Data:   data,
+		Status:  http.StatusOK,
+		Message: message,
+		Data:    data,
 	})
 }
 
 // SendCreated sends a JSON response with a status code of 201 (Created).
-func SendCreated(c *gin.Context, data interface{}) {
+func SendCreated(c *gin.Context, message string, data interface{}) {
 	c.JSON(http.StatusCreated, Response{
-		Status: http.StatusCreated,
-		Data:   data,
+		Status:  http.StatusCreated,
+		Message: message,
+		Data:    data,
 	})
 }
 
@@ -59,4 +61,9 @@ func SendNotFound(c *gin.Context, message string) {
 // SendInternalServerError sends a JSON response with a status code of 500 (Internal Server Error).
 func SendInternalServerError(c *gin.Context, message string) {
 	SendError(c, http.StatusInternalServerError, message)
+}
+
+// SendMethodNotAllowedError sends a JSON response with a status code of 405 (Method Not Allowed).
+func SendMethodNotAllowedError(c *gin.Context, message string) {
+	SendError(c, http.StatusMethodNotAllowed, message)
 }

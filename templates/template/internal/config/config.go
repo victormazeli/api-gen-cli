@@ -6,29 +6,32 @@ import (
 	"log"
 )
 
-type AppConfig struct {
-	Env *Env
-	DB  *gorm.DB
+type ApplicationConfig struct {
+	Config *Config
+	DB     *gorm.DB
 }
 
-type Env struct {
-	ServerPort string `mapstructure:"SERVER_PORT"`
-	DBUrl      string `mapstructure:"DB_URL"`
-	DBName     string `mapstructure:"DB_NAME"`
-	JwtKey     string `mapstructure:"JWT_KEY"`
-	RedisUrl   string `mapstructure:"REDIS_URL"`
+type Config struct {
+	Server struct {
+		Port string
+		Host string
+	}
+	Database struct {
+		URL  string
+		Name string
+	}
 }
 
-func LoadEnvironmentConfig() *Env {
-	env := Env{}
-	viper.SetConfigFile("app_config.json")
+func LoadEnvironmentConfig() *Config {
+	env := Config{}
+	viper.SetConfigFile("appSettings.json")
 	viper.SetConfigType("json")
-	viper.SetConfigName("app_config")
+	viper.SetConfigName("appSettings")
 	viper.AddConfigPath(".")
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Can't find the file .env : %v", err)
+		log.Fatalf("Can't find the file app config file : %v", err)
 	}
 
 	err = viper.Unmarshal(&env)
