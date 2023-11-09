@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -126,40 +127,65 @@ func unzip(src, dest string) error {
 	}
 	defer r.Close()
 
+	// Find the template folder within the ZIP file
+	var templateFolder *zip.File
 	for _, f := range r.File {
+		if strings.HasPrefix(f.Name, "template/") {
+			templateFolder = f
+			break
+		}
+	}
+
+	if templateFolder == nil {
+		return fmt.Errorf("template folder not found in the ZIP file")
+	}
+
+	for _, f := range r.File {
+		if !strings.HasPrefix(f.Name, "template/") {
+			continue
+		}
+
+		// Construct the new file path
+		extractedFilePath := filepath.Join(dest, strings.TrimPrefix(f.Name, "template/"))
+
+		if f.FileInfo().IsDir() {
+			// Create directory if it doesn't exist
+			err = os.MkdirAll(extractedFilePath, os.ModePerm)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		// Extract file from the template folder
 		rc, err := f.Open()
 		if err != nil {
 			return err
 		}
-		rc.Close()
 
-		// Normalize the file path to prevent directory traversal
-		cleanedPath := filepath.Join(dest, filepath.Clean(f.Name))
-
-		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(cleanedPath, os.ModePerm)
-			if err != nil {
-				return err
-			}
-		} else {
-			if err := os.MkdirAll(filepath.Dir(cleanedPath), os.ModePerm); err != nil {
-				return err
-			}
-
-			file, err := os.OpenFile(cleanedPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if err != nil {
-				return err
-			}
-			file.Close()
-
-			// Limit the amount of data that can be copied to prevent a DoS vulnerability
-			_, err = io.CopyN(file, rc, 1<<20) // Limit to 1MB
-			if err != nil {
-				if !errors.Is(err, io.EOF) {
-					return err
-				}
-			}
+		outFile, err := os.Create(extractedFilePath)
+		if err != nil {
+			rc.Close()
+			return err
 		}
+
+		limitReader := io.LimitedReader{R: rc, N: 1 << 20}
+		_, err = io.Copy(outFile, &limitReader)
+		if err != nil {
+			rc.Close()
+			outFile.Close()
+			return err
+		}
+
+		rc.Close()
+		outFile.Close()
+	}
+
+	// Remove the _MACOSX folder if it exists
+	macOSXPath := filepath.Join(dest, "__MACOSX")
+	err = os.RemoveAll(macOSXPath)
+	if err != nil {
+		return err
 	}
 
 	return nil
