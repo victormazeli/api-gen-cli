@@ -1,3 +1,7 @@
+## [0.1.8](https://github.com/victormazeli/api-gen-cli/compare/v0.1.7...v0.1.8) (2023-11-09)
+
+
+
 ## [0.1.7](https://github.com/victormazeli/api-gen-cli/compare/v0.1.6...v0.1.7) (2023-10-14)
 
 
@@ -33,15 +37,6 @@
 ### Bug Fixes
 
 * update on go release ([70b669f](https://github.com/victormazeli/api-gen-cli/commit/70b669f61dc55f2e723107c5283a712cb4770af6))
-
-
-
-## [0.1.3](https://github.com/victormazeli/api-gen-cli/compare/v0.1.2...v0.1.3) (2023-09-16)
-
-
-### Bug Fixes
-
-* update on go release ([f8a5dde](https://github.com/victormazeli/api-gen-cli/commit/f8a5ddee5d8e4a87e76a372e4f2adc4d74f2b737))
 
 
 
